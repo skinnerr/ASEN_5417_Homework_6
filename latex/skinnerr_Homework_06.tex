@@ -1,0 +1,183 @@
+\documentclass[11pt]{article}
+
+\input{../../Latex_Common/skinnerr_latex_preamble_asen5417.tex}
+
+%%
+%% DOCUMENT START
+%%
+
+\begin{document}
+
+\pagestyle{fancyplain}
+\lhead{}
+\chead{}
+\rhead{}
+\lfoot{\hrule ASEN 5417: Homework 6}
+\cfoot{\hrule \thepage}
+\rfoot{\hrule Ryan Skinner}
+
+\noindent
+{\Large Homework 6}
+\hfill
+{\large Ryan Skinner}
+\\[0.5ex]
+{\large ASEN 5417: Numerical Methods}
+\hfill
+{\large Due 2015/11/10}\\
+\hrule
+\vspace{6pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction} %%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{wrapfigure}[17]{R}{0.5\textwidth}
+\vspace{-0.8cm}
+\begin{center}
+\begin{tikzpicture}
+    \begin{axis}[
+    width=0.5\textwidth,
+    axis lines=middle,
+    axis line style=thick,
+    unit vector ratio=1 1 1,
+    xlabel style={at=(current axis.right of origin), anchor=north east},
+    ylabel style={at=(current axis.above origin), anchor=north east},
+    domain=0:1.2,
+    xmin=-0.05,
+    xmax=1.2,
+    ymin=-0.05,
+    ymax=1.2,
+    xlabel=$Z$,
+    ylabel=$Y$,
+    xtick={0,1},
+    ytick={0,1},
+    clip=false
+    ]
+    \coordinate (O) at (axis cs:0,0);
+    \coordinate (A) at (axis cs:1,0);
+    \coordinate (B) at (axis cs:1,1);
+    \coordinate (C) at (axis cs:0,1);
+    \draw[ultra thick] (O) -- (A) node[black,midway,below]{$U=0$}
+                           -- (B) node[black,midway,right]{$U=0$}
+                           -- (C) node[black,midway,above]{$\begin{aligned} U_{,Y} &= 0, &\text{Problem 1} \\
+                                                                            U      &= 1, &\text{Problem 2} \end{aligned}$}
+                           -- (O) node[black,midway,left]{$U=0$};
+    \end{axis}
+\end{tikzpicture}
+\\[6pt]
+\caption{Boundary value problem for Homework 6. No-slip conditions are imposed at three side walls. For Problem 2, the upper boundary is a moving wall. }
+\label{fig:bvp}
+\end{center}
+\end{wrapfigure}
+
+The equations that govern open channel flow at an inclination of $\theta$ degrees with the horizontal can be transformed into a Poisson equation by scaling the streamwise velocity $u$ as
+\begin{equation}
+U(Y,Z) = \frac{u(Y,Z)}{L^2 \rho g \sin(\theta / \mu)}
+\;,
+\end{equation}
+where $L$ is the length of the square channel, $\rho$ is the fluid density, $g$ is gravitational acceleration, and $\mu$ is the fluid's dynamic viscosity. The cross-sectional dimensions in $y$ and $z$ are also normalized by $Y = y/L$ and $Z = Z/L$. Through these scaling procedures, the governing equations map onto a unit square as
+\begin{align}
+U_{,YY} + U_{,ZZ} &= 0
+\;, \label{eq:poisson} \\
+U(0,Z) &= 0
+\;, \notag\\
+U_{,Y}(1,Z) &= 0
+\;, \notag\\
+U(Y,0) = U(Y,1) &= 0
+\;.
+\label{eq:original_bcs}
+\end{align}
+
+\subsection{Problem 1}
+
+Numerically integrate \eqref{eq:poisson} with the stated boundary conditions \eqref{eq:original_bcs} using the ADI method with $N = 101$ grid points in each direction. Implement LU decomposition to solve the tridiagonal systems, and determine convergence by a reduction of the original error by three orders of magnitude.
+
+Plot the contours of $U$ in the $Y$-$Z$ plane at convergence.
+
+\subsection{Problem 2}
+
+Change the upper boundary condition to represent a solid lid moving at a constant velocity with
+\begin{equation}
+U_{,Y}(1,Z) = 0 \quad\longrightarrow\quad U(1,Z) = 1
+\;.
+\end{equation}
+Solve this problem using the SOR method. As in Problem 1, define convergence as a reduction by three orders of magnitude of the initial error.
+
+Obtain the best estimate for the acceleration parameter $\omega$ by numerical experimentation. That is, plot the number of iterations required for convergence as a function of $\omega$, and determine the value of $\omega$ that minimizes this function. How does this value of $\omega$ compare to the theoretical value?
+
+Plot the contours of $U$ in the $Y$-$Z$ plane at convergence, and compare the results to Problem 1.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Methodology} %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Problem 1}
+
+\subsection{Problem 2}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Results} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Problem 1}
+
+\subsection{Problem 2}
+
+%\begin{figure}[h!]
+%\begin{center}
+%\includegraphics[scale=0.62]{Prob2_d0p5_err.eps}
+%\hspace*{-0.2cm}
+%\includegraphics[scale=0.62]{Prob2_d0p5_u.eps}
+%\\
+%\includegraphics[scale=0.62]{Prob2_d1_err.eps}
+%\hspace*{-0.2cm}
+%\includegraphics[scale=0.62]{Prob2_d1_u.eps}
+%\\
+%\includegraphics[scale=0.62]{Prob2_d10_err.eps}
+%\hspace*{-0.2cm}
+%\includegraphics[scale=0.62]{Prob2_d10_u.eps}
+%\\[-0.5cm]
+%\caption{Crank-Nicolson solutions to \eqref{eq:prob1} compared to analytical solutions \eqref{eq:prob1_analytic}, and the point-wise relative error over time. Diffusion numbers $d$ are annotated. For $d = 10$, $\Delta t = 0.6601$.}
+%\label{fig:Prob2}
+%\end{center}
+%\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Discussion} %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Problem 1}
+
+\subsection{Problem 2}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{References} %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+No external references were used other than the course notes for this assignment.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Appendix: MATLAB Code} %%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The following code listings generate all figures presented in this homework assignment. 
+
+%\includecode{Problem_1.m}
+%\includecode{Problem_2.m}
+
+%%
+%% DOCUMENT END
+%%
+\end{document}
