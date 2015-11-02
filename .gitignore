@@ -1,0 +1,12 @@
+# Exclude assignment from professor
+ASEN*.pdf
+# Exclude all files in latex directory except .tex and .pdf
+latex/*
+!latex/*.tex
+!latex/*.pdf
+# Exclude Matlab recovery files starting with "~"
+matlab/\~*
+# Exclude all image files except pdf and png
+images/*
+!images/*.png
+!images/*.pdf
