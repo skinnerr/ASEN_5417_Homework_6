@@ -103,7 +103,7 @@ Change the upper boundary condition to represent a solid lid moving at a constan
 U_{,Y}(1,Z) = 0 \quad\longrightarrow\quad U(1,Z) = 1
 \;.
 \end{equation}
-Solve this problem using the SOR method. As in Problem 1, define convergence as a reduction by three orders of magnitude of the initial error in the maximum norm.
+Solve this problem using the successive over-relaxation (SOR) method. As in Problem 1, define convergence as a reduction by three orders of magnitude of the initial error in the maximum norm.
 
 Obtain the best estimate for the acceleration parameter $\omega$ by numerical experimentation. That is, plot the number of iterations required for convergence as a function of $\omega$, and determine the value of $\omega$ that minimizes this function. How does this value of $\omega$ compare to the theoretical value?
 
@@ -119,31 +119,31 @@ Plot the contours of $U$ in the $Y$-$Z$ plane at convergence, and compare the re
 
 The alternating-direction implicit (ADI) method assumes a pseudo-time derivative ($\partial/\partial t$), such that \eqref{eq:poisson} becomes
 \begin{equation}
-T_{,t} = U_{,YY} + U_{,ZZ} = -1
+T_{,t} = U_{,YY} + U_{,ZZ} - \xi = 0
 \;,
 \label{eq:adi_poisson}
 \end{equation}
-and our solution for \eqref{eq:poisson} can be interpreted as the steady-state solution to \eqref{eq:adi_poisson} as $t \rightarrow \infty$. This equation is parabolic in space and elliptic in time. Of course, the transient is not physical, so it acceptable to advance the solution in time using the fully implicit Euler method.
+where $\xi$ is the inhomogeneous source term. Our solution for \eqref{eq:poisson} can be interpreted as the steady-state solution to \eqref{eq:adi_poisson} as $t \rightarrow \infty$. This equation is parabolic in space and elliptic in time. Of course, the transient is not physical, so it acceptable to advance the solution in time using the fully implicit Euler method.
 
-The ADI method breaks the problem into two directions and solves each over two half-time steps. Discretizing the problem using second-order central differences, defining the inhomogeneous source term as $\xi(x,y) = 1$, and letting the grid spacing in both directions be equal ($h \equiv \Delta y = \Delta z$), we obtain
+The ADI method breaks the problem into two directions and solves each over two half-time steps. Discretizing the problem using second-order central differences, defining the inhomogeneous source term as $\xi(Y,Z) = -1$, and letting the grid spacing in both directions be equal ($h \equiv \Delta y = \Delta z$), we obtain
 \begin{align}
-U_{(i+1,j)}^{n+1/2} - (2 + \rho) U_{(i,j)}^{n+1/2} + U_{(i-1,j)}^{n+1/2}
+U_{i+1,j}^{n+1/2} - (2 + \rho) U_{i,j}^{n+1/2} + U_{i-1,j}^{n+1/2}
 &=
--U_{(i,j+1)}^{n} + (2 - \rho) U_{(i,j)}^{n} - U_{(i,j-1)}^{n} - h^2 \xi_{(i,j)}
+-U_{i,j+1}^{n} + (2 - \rho) U_{i,j}^{n} - U_{i,j-1}^{n} - h^2 \xi_{i,j}
 \;, \\
-U_{(i,j+1)}^{n+1} - (2 + \rho) U_{(i,j)}^{n+1} + U_{(i,j-1)}^{n+1}
+U_{i,j+1}^{n+1} - (2 + \rho) U_{i,j}^{n+1} + U_{i,j-1}^{n+1}
 &=
--U_{(i+1,j)}^{n+1/2} + (2 - \rho) U_{(i,j)}^{n+1/2} - U_{(i-1,j)}^{n+1/2} - h^2 \xi_{(i,j)}
+-U_{i+1,j}^{n+1/2} + (2 - \rho) U_{i,j}^{n+1/2} - U_{i-1,j}^{n+1/2} - h^2 \xi_{i,j}
 \;,
 \end{align}
-where $\rho = h^2 / \Delta t$. The first pass loops over all $j$ values, and for each $j$ solves for $U$ at all $i$-locations. The second equation does the opposite. Initial guesses of the solution along the domain must be provided, but the RHS is always known and solution proceeds in the standard manner for implicit central differences. Boundary conditions are incorporated in the standard fashion as well, by modifying the RHS and diagonal terms as needed. To determine convergence, we define our error norm for the $n$\th iteration as
+where $\rho = h^2 / \Delta t$, and subscript commas indicate a separation of spatial indices rather than differentiation. The first pass loops over all $j$ values, and for each $j$ solves for $U$ at all $i$-locations. The second equation does the opposite. Initial guesses of the solution along the domain must be provided, but the RHS is always known and solution proceeds in the standard manner for implicit central differences. Boundary conditions are incorporated in the standard fashion as well, by modifying the RHS and diagonal terms as needed. To determine convergence, we define our error norm for the $n$\th iteration as
 \begin{equation}
-\epsilon_n = \frac{1}{\epsilon_1} \sum_{i=1}^N \sum_{j=1}^N \norm{U_{(i,j)}^{n} - U_{(i,j)}^{n-1}}
+\epsilon_n = \frac{1}{\epsilon_1} \sum_{i=1}^N \sum_{j=1}^N \norm{U_{i,j}^{n} - U_{i,j}^{n-1}}
 \;, \quad
 n = 2, 3, ...
 \;,
 \end{equation}
-and cease solution when $\epsilon_n \le 10^{-3}$. Here, $\epsilon_1$ is defined as the RHS sums evaluated for $n=1$, and the initial guess is defined as $U_{(i,j)}^0 = 0$.
+and cease solution when $\epsilon_n \le 10^{-3}$. Here, $\epsilon_1$ is defined as the RHS sums evaluated for $n=1$, and the initial guess is defined as $U_{i,j}^0 = 0$.
 
 Peaceman and Rachford (1955) show that the ADI method converges for any value of the iteration parameter $\rho$. The optimal value is a function of the iteration number:
 \begin{equation}
@@ -154,14 +154,31 @@ k = 1, 2, ..., n \quad \text{(until convergence)}
 \end{equation}
 If we were to change $\rho$ on each iteration, the $\mb{L}$ and $\mb{U}$ matrices involved in LU-decomposition would need to change each iteration as well, and we would sacrifice the efficiency gains of LU-decomposition. Instead, we choose a constant value of $\rho = 0.002$ that gives reasonably fast convergence (9 iterations) based on experimentation. The details of LU-decomposition will not be discussed here, as they were presented in full in Homework~4.
 
+The 
+
 \subsection{Problem 2}
 
-We modify the equations from Problem 1 ever so slightly for the SOR method, defining our convergence criterion as
+We modify the the equations from the ADI method ever so slightly for the SOR method, in that a pseudo-time derivative is never used, but we still sweep in alternating directions. We focus on a single-direction ``row sweep'' for illustrative purposes. The associated central difference equation becomes
 \begin{equation}
-\epsilon_n = \frac{1}{\epsilon_1} \max_{(i,j)} \norm{U_{(i,j)}^{n} - U_{(i,j)}^{n-1}}
+\left( \frac{-\omega}{4} \right) U_{i-1,j}^{n+1/2}
++ U_{i,j}^{n+1/2}
++ \left( \frac{-\omega}{4} \right) U_{i+1,j}^{n+1/2}
+=
+\left( 1 - \omega \right) U_{i,j}^n
++ \frac{\omega}{4}
+\left(
+U_{i,j+1}^{n} + U_{i,j-1}^{n} - h^2 \xi_{i,j}
+\right)
+\;,
+\end{equation}
+where $\omega$ is the relaxation parameter, which typically has an optimal value in the range $[1.7,1.9]$. This equation is used to calculate the half-iteration values $U^{n+1/2}$, and then we perform a ``column sweep'' to finish one full iteration.
+
+We define our convergence criterion based on the maximum norm as
+\begin{equation}
+\epsilon_n = \frac{1}{\epsilon_1} \max_{i,j} \norm{U_{i,j}^{n} - U_{i,j}^{n-1}}
 \;.
 \end{equation}
-Similar to Problem 1, $\epsilon_1$ is defined as the RHS max operation evaluated for $n=1$, and the initial guess is defined as $U_{(i,j)}^0 = 0$ except for when $j=N$, in which case the $U=1$ boundary condition is imposed.
+Similar to the first problem, $\epsilon_1$ is defined as the RHS max operation evaluated for $n=1$, and the initial guess is defined as $U_{i,j}^0 = 0$ except for when $j=N$, in which case the $U=1$ boundary condition is imposed.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -220,10 +237,13 @@ No external references were used other than the course notes for this assignment
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The following code listings generate all figures presented in this homework assignment. 
+The following code listings generate all figures presented in this homework assignment. LU-decomposition code is omitted since it was already presented in Homework~4.
 
-%\includecode{Problem_1.m}
-%\includecode{Problem_2.m}
+\includecode{Problem_1.m}
+\includecode{Assemble_fixJAY.m}
+\includecode{Assemble_fixEYE.m}
+\includecode{Problem_2.m}
+\includecode{Assemble_SOR.m}
 
 %%
 %% DOCUMENT END
