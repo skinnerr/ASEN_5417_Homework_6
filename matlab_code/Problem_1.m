@@ -20,7 +20,7 @@ function [] = Problem_1()
     h = x(2) - x(1);
     
     % Source term.
-    xi = 1;
+    xi = -1;
     
     % Boundary conditions (u and uprime) defined as cardinal directions (n, s, w, e).
     BC.us = 0;
@@ -72,7 +72,7 @@ function [] = Problem_1()
         end
         
         epsilon = sum(sum(abs(u_prev - u)));
-        fprintf('Iteration: %3i, Error Norm: %10.4e\n', n, epsilon);
+        fprintf('Iteration: %2i, Error Norm: %7.1e\n', n, epsilon);
         
         if n == 1
             conv_crit = 1e-3 * epsilon;

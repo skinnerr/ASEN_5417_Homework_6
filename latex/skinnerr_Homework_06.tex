@@ -103,7 +103,7 @@ Change the upper boundary condition to represent a solid lid moving at a constan
 U_{,Y}(1,Z) = 0 \quad\longrightarrow\quad U(1,Z) = 1
 \;.
 \end{equation}
-Solve this problem using the SOR method. As in Problem 1, define convergence as a reduction by three orders of magnitude of the initial error.
+Solve this problem using the SOR method. As in Problem 1, define convergence as a reduction by three orders of magnitude of the initial error in the maximum norm.
 
 Obtain the best estimate for the acceleration parameter $\omega$ by numerical experimentation. That is, plot the number of iterations required for convergence as a function of $\omega$, and determine the value of $\omega$ that minimizes this function. How does this value of $\omega$ compare to the theoretical value?
 
@@ -156,6 +156,13 @@ If we were to change $\rho$ on each iteration, the $\mb{L}$ and $\mb{U}$ matrice
 
 \subsection{Problem 2}
 
+We modify the equations from Problem 1 ever so slightly for the SOR method, defining our convergence criterion as
+\begin{equation}
+\epsilon_n = \frac{1}{\epsilon_1} \max_{(i,j)} \norm{U_{(i,j)}^{n} - U_{(i,j)}^{n-1}}
+\;.
+\end{equation}
+Similar to Problem 1, $\epsilon_1$ is defined as the RHS max operation evaluated for $n=1$, and the initial guess is defined as $U_{(i,j)}^0 = 0$ except for when $j=N$, in which case the $U=1$ boundary condition is imposed.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Results} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -164,19 +171,30 @@ If we were to change $\rho$ on each iteration, the $\mb{L}$ and $\mb{U}$ matrice
 
 \subsection{Problem 1}
 
-\subsection{Problem 2}
-
 A contour plot of the solution for $U$ obtained from the ADI method is presented in \figref{fig:Prob1}.
 
-\begin{wrapfigure}[17]{R}{0.55\textwidth}
-\vspace{-0.8cm}
+\begin{figure}[h!]
 \begin{center}
-\includegraphics[width=0.55\textwidth]{Prob1.eps}
-\\
+\includegraphics[scale=0.6]{Prob1.eps}
+\\[0.5cm]
 \caption{Contours of $U$ for Problem 1.}
 \label{fig:Prob1}
 \end{center}
-\end{wrapfigure}
+\end{figure}
+
+\subsection{Problem 2}
+
+Iterations to convergence as a function of $\omega$, as well as a contour plot of the solution for $U$ obtained from the SOR method is presented in \figref{fig:Prob2}.
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[scale=0.6]{Prob2_convergence.eps}
+\includegraphics[scale=0.6]{Prob2_contours.eps}
+\\[0.5cm]
+\caption{Convergence behavior and contours of $U$ for Problem 2.}
+\label{fig:Prob2}
+\end{center}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
