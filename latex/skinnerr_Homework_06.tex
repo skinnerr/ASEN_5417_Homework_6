@@ -23,7 +23,7 @@
 \\[0.5ex]
 {\large ASEN 5417: Numerical Methods}
 \hfill
-{\large Due 2015/11/10}\\
+{\large Due 2015/11/12}\\
 \hrule
 \vspace{6pt}
 
@@ -79,7 +79,7 @@ U(Y,Z) = \frac{u(Y,Z)}{L^2 \rho g \sin(\theta / \mu)}
 \end{equation}
 where $L$ is the length of the square channel, $\rho$ is the fluid density, $g$ is gravitational acceleration, and $\mu$ is the fluid's dynamic viscosity. The cross-sectional dimensions in $y$ and $z$ are also normalized by $Y = y/L$ and $Z = Z/L$. Through these scaling procedures, the governing equations map onto a unit square as
 \begin{align}
-U_{,YY} + U_{,ZZ} &= 0
+U_{,YY} + U_{,ZZ} &= -1
 \;, \label{eq:poisson} \\
 U(0,Z) &= 0
 \;, \notag\\
@@ -116,6 +116,36 @@ Plot the contours of $U$ in the $Y$-$Z$ plane at convergence, and compare the re
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Problem 1}
+
+The alternating-direction implicit (ADI) method assumes a pseudo-time derivative ($\partial/\partial t$), such that \eqref{eq:poisson} becomes
+\begin{equation}
+T_{,t} = U_{,YY} + U_{,ZZ} = -1
+\;,
+\label{eq:adi_poisson}
+\end{equation}
+and our solution for \eqref{eq:poisson} can be interpreted as the steady-state solution to \eqref{eq:adi_poisson} as $t \rightarrow \infty$. This equation is parabolic in space and elliptic in time. Of course, the transient is not physical, so it acceptable to advance the solution in time using the fully implicit Euler method.
+
+The ADI method breaks the problem into two directions and solves each over two half-time steps. Discretizing the problem using second-order central differences, defining the inhomogeneous source term as $\xi(x,y) = 1$, and letting the grid spacing in both directions be equal ($h \equiv \Delta y = \Delta z$), we obtain
+\begin{align}
+U_{(i+1,j)}^{n+1/2} - (2 + \rho) U_{(i,j)}^{n+1/2} + U_{(i-1,j)}^{n+1/2}
+&=
+-U_{(i,j+1)}^{n} + (2 - \rho) U_{(i,j)}^{n} - U_{(i,j-1)}^{n} - \Delta y^2 \xi_{(i,j)}
+\;, \\
+U_{(i,j+1)}^{n+1} - (2 - \rho) U_{(i,j)}^{n+1} + U_{(i,j-1)}^{n+1}
+&=
+-U_{(i+1,j)}^{n+1/2} + (2 + \rho) U_{(i,j)}^{n+1/2} - U_{(i-1,j)}^{n+1/2} - \Delta z^2 \xi_{(i,j)}
+\;,
+\end{align}
+where $\rho = h^2 / \Delta t$. The first pass loops over all $j$ values, and for each $j$ solves for $U$ at all $i$-locations. The second equation does the opposite. Initial guesses of the solution along the domain must be provided, but the RHS is always known and solution proceeds in the standard manner for implicit central differences.
+
+Peaceman and Rachford (1955) show that the ADI method converges for any value of the iteration parameter $\rho$. The optimal value is a function of the iteration number:
+\begin{equation}
+\rho = 4 \sin^2 \frac{k \pi}{2 N}
+\;, \qquad
+k = 1, 2, ..., n \text{ (until convergence)}
+\;,
+\end{equation}
+but we will choose a constant value that gives reasonably fast convergence based on experimentation, since otherwise the $\mb{L}$ and $\mb{U}$ matrices involved in LU-decomposition would need to change each iteration. The details of LU-decomposition will not be discussed here, as they were presented in full in Homework~4.
 
 \subsection{Problem 2}
 
