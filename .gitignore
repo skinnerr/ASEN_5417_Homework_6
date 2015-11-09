@@ -7,7 +7,7 @@ latex/*
 # Exclude Matlab recovery files starting with "~"
 matlab/\~*
 # Exclude Matlab recovery files ending with "~"
-matlab/*\~
+matlab/*.m\~
 # Exclude all image files except pdf and png
 images/*
 !images/*.png
