@@ -129,23 +129,30 @@ The ADI method breaks the problem into two directions and solves each over two h
 \begin{align}
 U_{(i+1,j)}^{n+1/2} - (2 + \rho) U_{(i,j)}^{n+1/2} + U_{(i-1,j)}^{n+1/2}
 &=
--U_{(i,j+1)}^{n} + (2 - \rho) U_{(i,j)}^{n} - U_{(i,j-1)}^{n} - \Delta y^2 \xi_{(i,j)}
+-U_{(i,j+1)}^{n} + (2 - \rho) U_{(i,j)}^{n} - U_{(i,j-1)}^{n} - h^2 \xi_{(i,j)}
 \;, \\
-U_{(i,j+1)}^{n+1} - (2 - \rho) U_{(i,j)}^{n+1} + U_{(i,j-1)}^{n+1}
+U_{(i,j+1)}^{n+1} - (2 + \rho) U_{(i,j)}^{n+1} + U_{(i,j-1)}^{n+1}
 &=
--U_{(i+1,j)}^{n+1/2} + (2 + \rho) U_{(i,j)}^{n+1/2} - U_{(i-1,j)}^{n+1/2} - \Delta z^2 \xi_{(i,j)}
+-U_{(i+1,j)}^{n+1/2} + (2 - \rho) U_{(i,j)}^{n+1/2} - U_{(i-1,j)}^{n+1/2} - h^2 \xi_{(i,j)}
 \;,
 \end{align}
-where $\rho = h^2 / \Delta t$. The first pass loops over all $j$ values, and for each $j$ solves for $U$ at all $i$-locations. The second equation does the opposite. Initial guesses of the solution along the domain must be provided, but the RHS is always known and solution proceeds in the standard manner for implicit central differences.
+where $\rho = h^2 / \Delta t$. The first pass loops over all $j$ values, and for each $j$ solves for $U$ at all $i$-locations. The second equation does the opposite. Initial guesses of the solution along the domain must be provided, but the RHS is always known and solution proceeds in the standard manner for implicit central differences. Boundary conditions are incorporated in the standard fashion as well, by modifying the RHS and diagonal terms as needed. To determine convergence, we define our error norm for the $n$\th iteration as
+\begin{equation}
+\epsilon_n = \frac{1}{\epsilon_1} \sum_{i=1}^N \sum_{j=1}^N \norm{U_{(i,j)}^{n} - U_{(i,j)}^{n-1}}
+\;, \quad
+n = 2, 3, ...
+\;,
+\end{equation}
+and cease solution when $\epsilon_n \le 10^{-3}$. Here, $\epsilon_1$ is defined as the RHS sums evaluated for $n=1$, and the initial guess is defined as $U_{(i,j)}^0 = 0$.
 
 Peaceman and Rachford (1955) show that the ADI method converges for any value of the iteration parameter $\rho$. The optimal value is a function of the iteration number:
 \begin{equation}
 \rho = 4 \sin^2 \frac{k \pi}{2 N}
 \;, \qquad
-k = 1, 2, ..., n \text{ (until convergence)}
-\;,
+k = 1, 2, ..., n \quad \text{(until convergence)}
+\;.
 \end{equation}
-but we will choose a constant value that gives reasonably fast convergence based on experimentation, since otherwise the $\mb{L}$ and $\mb{U}$ matrices involved in LU-decomposition would need to change each iteration. The details of LU-decomposition will not be discussed here, as they were presented in full in Homework~4.
+If we were to change $\rho$ on each iteration, the $\mb{L}$ and $\mb{U}$ matrices involved in LU-decomposition would need to change each iteration as well, and we would sacrifice the efficiency gains of LU-decomposition. Instead, we choose a constant value of $\rho = 0.002$ that gives reasonably fast convergence (9 iterations) based on experimentation. The details of LU-decomposition will not be discussed here, as they were presented in full in Homework~4.
 
 \subsection{Problem 2}
 
@@ -159,24 +166,17 @@ but we will choose a constant value that gives reasonably fast convergence based
 
 \subsection{Problem 2}
 
-%\begin{figure}[h!]
-%\begin{center}
-%\includegraphics[scale=0.62]{Prob2_d0p5_err.eps}
-%\hspace*{-0.2cm}
-%\includegraphics[scale=0.62]{Prob2_d0p5_u.eps}
-%\\
-%\includegraphics[scale=0.62]{Prob2_d1_err.eps}
-%\hspace*{-0.2cm}
-%\includegraphics[scale=0.62]{Prob2_d1_u.eps}
-%\\
-%\includegraphics[scale=0.62]{Prob2_d10_err.eps}
-%\hspace*{-0.2cm}
-%\includegraphics[scale=0.62]{Prob2_d10_u.eps}
-%\\[-0.5cm]
-%\caption{Crank-Nicolson solutions to \eqref{eq:prob1} compared to analytical solutions \eqref{eq:prob1_analytic}, and the point-wise relative error over time. Diffusion numbers $d$ are annotated. For $d = 10$, $\Delta t = 0.6601$.}
-%\label{fig:Prob2}
-%\end{center}
-%\end{figure}
+A contour plot of the solution for $U$ obtained from the ADI method is presented in \figref{fig:Prob1}.
+
+\begin{wrapfigure}[17]{R}{0.55\textwidth}
+\vspace{-0.8cm}
+\begin{center}
+\includegraphics[width=0.55\textwidth]{Prob1.eps}
+\\
+\caption{Contours of $U$ for Problem 1.}
+\label{fig:Prob1}
+\end{center}
+\end{wrapfigure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

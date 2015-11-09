@@ -32,7 +32,7 @@ function [] = Problem_1()
     u = zeros(N,N);
     
     % Fixed iteraton parameter.
-    rho = 0.02;
+    rho = 0.002;
     
     %%%
     % Solve problem numerically.
@@ -40,37 +40,19 @@ function [] = Problem_1()
     
     % Solution norm.
     epsilon = inf;
+    conv_crit = 0;
     
     % Iteration number
     n = 0;
     
-    hf = figure();
-    
     % Iterate over time steps.
-%     while epsilon > 1e-3
-    while n < 100
+    while epsilon > conv_crit
         n = n + 1;
         
-        uprev = u;
-        % Loop over and hold constant the FIRST spatial index.
-        for i = 2:N-1
-            [diag, sub, sup, rhs] = Assemble_fixEYE(uprev(i-1:i+1,:), rho, h, xi, BC);
-            if n == 1
-                [LUi.l, LUi.u] = LU_Decompose(diag, sub, sup);
-            end
-            [sol] = LU_Solve(sub, LUi.l, LUi.u, rhs);
-            u(i,:) = [BC.us; sol; sol(end)];
-        end
-        
-        surf(x,y,u);
-        xlabel('x');
-        ylabel('y');
-        input('Any key to continue.');
-        
-        uhalf = u;
-        % Loop over and hold constant the SECOND spatial index.
+        u_prev = u;
+        % Loop over j (horizontal slices).
         for j = 2:N-1
-            [diag, sub, sup, rhs] = Assemble_fixJAY(uhalf(:,j-1:j+1), rho, h, xi, BC);
+            [diag, sub, sup, rhs] = Assemble_fixJAY(u_prev(:,j-1:j+1), rho, h, xi, BC);
             if n == 1
                 [LUj.l, LUj.u] = LU_Decompose(diag, sub, sup);
             end
@@ -78,19 +60,35 @@ function [] = Problem_1()
             u(:,j) = [BC.uw; sol; BC.ue];
         end
         
-        surf(x,y,u);
-        xlabel('x');
-        ylabel('y');
-        input('Any key to continue.');
+        u_half = u;
+        % Loop over i (vertical slices).
+        for i = 2:N-1
+            [diag, sub, sup, rhs] = Assemble_fixEYE(u_half(i-1:i+1,:), rho, h, xi, BC);
+            if n == 1
+                [LUi.l, LUi.u] = LU_Decompose(diag, sub, sup);
+            end
+            [sol] = LU_Solve(sub, LUi.l, LUi.u, rhs);
+            u(i,:) = [BC.us; sol; sol(end)];
+        end
         
-        epsilon = sum(sum(abs(uhalf - u)));
+        epsilon = sum(sum(abs(u_prev - u)));
         fprintf('Iteration: %3i, Error Norm: %10.4e\n', n, epsilon);
+        
+        if n == 1
+            conv_crit = 1e-3 * epsilon;
+        end
         
     end
     
     %%%
     % Process results.
     %%%
+        
+    [C,h] = contour(x,y,u','LineWidth',2);
+    clabel(C,h,'FontSize',14,'LabelSpacing',1000);
+    axis('equal');
+    xlabel('Z');
+    ylabel('Y');
     
     disp('Done.');
     return
