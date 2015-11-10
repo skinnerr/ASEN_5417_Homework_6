@@ -22,11 +22,11 @@ function [diag, sub, sup, rhs] = Assemble_ADI( u_slice, rho, h, xi, BC, directio
      rhs = -             u_slice(diag_range,3) ...
            + (2 - rho) * u_slice(diag_range,2) ...
            -             u_slice(diag_range,1) ...
-           - h^2 * -xi;
+           - h^2 * xi;
     
     % Account for boundary conditions.
     if strcmp(direction,'vertical')
-        rhs(1) = rhs(1) - BC.us;
+        rhs(1)   = rhs(1) - BC.us;
         diag(end) = - (1 + rho);
         if BC.upn ~= 0
             error('Non-zero Neumann BC not supported.');

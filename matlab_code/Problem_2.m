@@ -28,12 +28,12 @@ function [] = Problem_2()
     BC.ue = 0;
     BC.un = 1;
     
-    % Fixed iteraton parameter.
-    rho = 0.002;
+    % Iteraton parameter as a function of interation number.
+    rho = @(iter) 4 * sin(pi * iter / (2 * N))^2;
     
     % Relaxation parameters to test.
     omega = [linspace(1.7,1.8,21), linspace(1.8,1.999,61)];
-    omega = 1.9;
+    omega = 1;
     
     n_to_converge = nan(length(omega));
     
@@ -62,45 +62,45 @@ function [] = Problem_2()
         % Iterate over time steps.
         while epsilon > conv_crit
             n = n + 1;
-
+        
             u_prev = u;
             % Loop over j (horizontal slices).
             for j = 2:N-1
-                [diag, sub, sup, rhs] = Assemble_SOR(u_prev(:,j-1:j+1)', ...
-                                                     om, rho, h, xi, BC, 'horizontal');
-                if n == 1
-                    [LUj.L, LUj.U] = LU_Decompose(diag, sub, sup);
-                end
-                [sol] = LU_Solve(sub, LUj.L, LUj.U, rhs);
+                [diag, sub, sup, rhs] = Assemble_SOR(u_prev(:,j-1:j+1), ...
+                                                     rho(n), h, xi, BC, 'horizontal');
+                [LUhoriz.l, LUhoriz.u] = LU_Decompose(diag, sub, sup);
+                [sol] = LU_Solve(sub, LUhoriz.l, LUhoriz.u, rhs);
                 u(:,j) = [BC.uw; sol; BC.ue];
+                u(:,j) = omega * u(:,j) + (1 - omega) * u_prev(:,j);
             end
+    
+%             surf(x,y,u');
+%             xlabel('Z');
+%             ylabel('Y');
+%             input('asfd');
 
             u_half = u;
             % Loop over i (vertical slices).
             for i = 2:N-1
-                [~, sub, ~, rhs] = Assemble_SOR(u_half(i-1:i+1,:), ...
-                                                om, rho, h, xi, BC, 'vertical');
-                if n == 1
-                    [LUi.L, LUi.U] = LU_Decompose(diag, sub, sup);
-                end
-                [sol] = LU_Solve(sub, LUi.L, LUi.U, rhs);
+                [diag, sub, sup, rhs] = Assemble_SOR(u_half(i-1:i+1,:)', ...
+                                                     rho(n), h, xi, BC, 'vertical');
+                [LUvert.l, LUvert.u] = LU_Decompose(diag, sub, sup);
+                [sol] = LU_Solve(sub, LUvert.l, LUvert.u, rhs);
                 u(i,:) = [BC.us; sol; BC.un];
+                u(i,:) = omega * u(i,:) + (1 - omega) * u_half(i,:);
             end
 
-            epsilon = max(max(abs(u_prev - u)));
-%             if mod(n,50) == 0
-                fprintf('Iteration: %4i, Error Norm: %7.1e\n', n, epsilon);
-%             end
-    
-    figure();
-    surf(x,y,u');
-    xlabel('Z');
-    ylabel('Y');
-    return
+            epsilon = sum(sum(abs(u_prev - u)));
+            fprintf('Iteration: %2i, Error Norm: %7.1e\n', n, epsilon);
 
             if n == 1
                 conv_crit = 1e-3 * epsilon;
             end
+    
+%             surf(x,y,u');
+%             xlabel('Z');
+%             ylabel('Y');
+%             input('asfd');
 
         end
         

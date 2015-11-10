@@ -31,8 +31,8 @@ function [] = Problem_1()
     % Initialize the solution, indexed by (x,y), and set BCs.
     u = zeros(N,N);
     
-    % Fixed iteraton parameter.
-    rho = 0.002;
+    % Iteraton parameter as a function of interation number.
+    rho = @(iter) 4 * sin(pi * iter / (2 * N))^2;
     
     %%%
     % Solve problem numerically.
@@ -52,10 +52,9 @@ function [] = Problem_1()
         u_prev = u;
         % Loop over j (horizontal slices).
         for j = 2:N-1
-            [diag, sub, sup, rhs] = Assemble_ADI(u_prev(:,j-1:j+1), rho, h, xi, BC, 'horizontal');
-            if n == 1
-                [LUj.l, LUj.u] = LU_Decompose(diag, sub, sup);
-            end
+            [diag, sub, sup, rhs] = Assemble_ADI(u_prev(:,j-1:j+1), ...
+                                                 rho(n), h, xi, BC, 'horizontal');
+            [LUj.l, LUj.u] = LU_Decompose(diag, sub, sup);
             [sol] = LU_Solve(sub, LUj.l, LUj.u, rhs);
             u(:,j) = [BC.uw; sol; BC.ue];
         end
@@ -63,10 +62,9 @@ function [] = Problem_1()
         u_half = u;
         % Loop over i (vertical slices).
         for i = 2:N-1
-            [diag, sub, sup, rhs] = Assemble_ADI(u_half(i-1:i+1,:)', rho, h, xi, BC, 'vertical');
-            if n == 1
-                [LUi.l, LUi.u] = LU_Decompose(diag, sub, sup);
-            end
+            [diag, sub, sup, rhs] = Assemble_ADI(u_half(i-1:i+1,:)', ...
+                                                 rho(n), h, xi, BC, 'vertical');
+            [LUi.l, LUi.u] = LU_Decompose(diag, sub, sup);
             [sol] = LU_Solve(sub, LUi.l, LUi.u, rhs);
             u(i,:) = [BC.us; sol; sol(end)];
         end
