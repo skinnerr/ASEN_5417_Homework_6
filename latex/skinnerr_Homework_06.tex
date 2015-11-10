@@ -92,7 +92,7 @@ U(Y,0) = U(Y,1) &= 0
 
 \subsection{Problem 1}
 
-Numerically integrate \eqref{eq:poisson} with the stated boundary conditions \eqref{eq:original_bcs} using the ADI method with $N = 101$ grid points in each direction. Implement LU decomposition to solve the tridiagonal systems, and determine convergence by a reduction of the original error by three orders of magnitude.
+Numerically integrate \eqref{eq:poisson} with the stated boundary conditions \eqref{eq:original_bcs} using the ADI method with $N = M = 101$ grid points in each direction. Implement LU decomposition to solve the tridiagonal systems, and determine convergence by a reduction of the original error by three orders of magnitude.
 
 Plot the contours of $U$ in the $Y$-$Z$ plane at convergence.
 
@@ -154,8 +154,6 @@ k = 1, 2, ..., n \quad \text{(until convergence)}
 \end{equation}
 If we were to change $\rho$ on each iteration, the $\mb{L}$ and $\mb{U}$ matrices involved in LU-decomposition would need to change each iteration as well, and we would sacrifice the efficiency gains of LU-decomposition. Instead, we choose a constant value of $\rho = 0.002$ that gives reasonably fast convergence (9 iterations) based on experimentation. The details of LU-decomposition will not be discussed here, as they were presented in full in Homework~4.
 
-The 
-
 \subsection{Problem 2}
 
 We modify the the equations from the ADI method ever so slightly for the SOR method, in that a pseudo-time derivative is never used, but we still sweep in alternating directions. We focus on a single-direction ``row sweep'' for illustrative purposes. The associated central difference equation becomes
@@ -172,6 +170,15 @@ U_{i,j+1}^{n} + U_{i,j-1}^{n} - h^2 \xi_{i,j}
 \;,
 \end{equation}
 where $\omega$ is the relaxation parameter, which typically has an optimal value in the range $[1.7,1.9]$. This equation is used to calculate the half-iteration values $U^{n+1/2}$, and then we perform a ``column sweep'' to finish one full iteration.
+
+The theoretical optimum value of $\omega$ is given by
+\begin{equation}
+\omega = \frac{8 - 4 \sqrt{4 - \alpha^2}}{\alpha^2}
+\;,\qquad
+\alpha = \cos(\pi/M) + \cos(\pi/N)
+\;,
+\end{equation}
+and for our grid with $M=N=101$, we obtain $\alpha = 1.9990$ and $\omega = 1.9397$.
 
 We define our convergence criterion based on the maximum norm as
 \begin{equation}

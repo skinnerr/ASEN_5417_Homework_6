@@ -52,7 +52,7 @@ function [] = Problem_1()
         u_prev = u;
         % Loop over j (horizontal slices).
         for j = 2:N-1
-            [diag, sub, sup, rhs] = Assemble_fixJAY(u_prev(:,j-1:j+1), rho, h, xi, BC);
+            [diag, sub, sup, rhs] = Assemble_ADI(u_prev(:,j-1:j+1), rho, h, xi, BC, 'horizontal');
             if n == 1
                 [LUj.l, LUj.u] = LU_Decompose(diag, sub, sup);
             end
@@ -63,7 +63,7 @@ function [] = Problem_1()
         u_half = u;
         % Loop over i (vertical slices).
         for i = 2:N-1
-            [diag, sub, sup, rhs] = Assemble_fixEYE(u_half(i-1:i+1,:), rho, h, xi, BC);
+            [diag, sub, sup, rhs] = Assemble_ADI(u_half(i-1:i+1,:)', rho, h, xi, BC, 'vertical');
             if n == 1
                 [LUi.l, LUi.u] = LU_Decompose(diag, sub, sup);
             end

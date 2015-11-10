@@ -28,8 +28,12 @@ function [] = Problem_2()
     BC.ue = 0;
     BC.un = 1;
     
+    % Fixed iteraton parameter.
+    rho = 0.002;
+    
     % Relaxation parameters to test.
     omega = [linspace(1.7,1.8,21), linspace(1.8,1.999,61)];
+    omega = 1.9;
     
     n_to_converge = nan(length(omega));
     
@@ -63,7 +67,7 @@ function [] = Problem_2()
             % Loop over j (horizontal slices).
             for j = 2:N-1
                 [diag, sub, sup, rhs] = Assemble_SOR(u_prev(:,j-1:j+1)', ...
-                                                     om, h, xi, BC, 'horizontal');
+                                                     om, rho, h, xi, BC, 'horizontal');
                 if n == 1
                     [LUj.L, LUj.U] = LU_Decompose(diag, sub, sup);
                 end
@@ -75,7 +79,7 @@ function [] = Problem_2()
             % Loop over i (vertical slices).
             for i = 2:N-1
                 [~, sub, ~, rhs] = Assemble_SOR(u_half(i-1:i+1,:), ...
-                                                om, h, xi, BC, 'vertical');
+                                                om, rho, h, xi, BC, 'vertical');
                 if n == 1
                     [LUi.L, LUi.U] = LU_Decompose(diag, sub, sup);
                 end
@@ -84,9 +88,15 @@ function [] = Problem_2()
             end
 
             epsilon = max(max(abs(u_prev - u)));
-            if mod(n,50) == 0
+%             if mod(n,50) == 0
                 fprintf('Iteration: %4i, Error Norm: %7.1e\n', n, epsilon);
-            end
+%             end
+    
+    figure();
+    surf(x,y,u');
+    xlabel('Z');
+    ylabel('Y');
+    return
 
             if n == 1
                 conv_crit = 1e-3 * epsilon;
