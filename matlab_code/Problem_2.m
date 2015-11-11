@@ -28,12 +28,9 @@ function [] = Problem_2()
     BC.ue = 0;
     BC.un = 1;
     
-    % Iteraton parameter as a function of interation number.
-    rho = @(iter) 4 * sin(pi * iter / (2 * N))^2;
-    
     % Relaxation parameters to test.
     omega = [linspace(1.7,1.8,21), linspace(1.8,1.999,61)];
-    omega = 1;
+    omega = 1.3;
     
     n_to_converge = nan(length(omega));
     
@@ -62,50 +59,46 @@ function [] = Problem_2()
         % Iterate over time steps.
         while epsilon > conv_crit
             n = n + 1;
-        
+            
             u_prev = u;
-            % Loop over j (horizontal slices).
-            for j = 2:N-1
-                [diag, sub, sup, rhs] = Assemble_SOR(u_prev(:,j-1:j+1), ...
-                                                     rho(n), h, xi, BC, 'horizontal');
-                [LUhoriz.l, LUhoriz.u] = LU_Decompose(diag, sub, sup);
-                [sol] = LU_Solve(sub, LUhoriz.l, LUhoriz.u, rhs);
-                u(:,j) = [BC.uw; sol; BC.ue];
-                u(:,j) = omega * u(:,j) + (1 - omega) * u_prev(:,j);
-            end
-    
-%             surf(x,y,u');
-%             xlabel('Z');
-%             ylabel('Y');
-%             input('asfd');
-
-            u_half = u;
-            % Loop over i (vertical slices).
+            
+            % Loop over columns.
             for i = 2:N-1
-                [diag, sub, sup, rhs] = Assemble_SOR(u_half(i-1:i+1,:)', ...
-                                                     rho(n), h, xi, BC, 'vertical');
-                [LUvert.l, LUvert.u] = LU_Decompose(diag, sub, sup);
-                [sol] = LU_Solve(sub, LUvert.l, LUvert.u, rhs);
-                u(i,:) = [BC.us; sol; BC.un];
-                u(i,:) = omega * u(i,:) + (1 - omega) * u_half(i,:);
+                % Within each column, loop over rows.
+                u_cols = u;
+                for j = 2:N-1
+                    u(i,j) = (1/4) * (   u_cols(i-1, j) + u_cols(i, j-1) ...
+                                       + u_cols(i+1, j) + u_cols(i, j+1) ...
+                                       - h^2 * xi                        );
+%                     u(i,j) = (1 - omega) * u_cols(i,j) ...
+%                              + (omega/4) * (   u_cols(i-1, j) + u_cols(i, j-1) ...
+%                                              + u_cols(i+1, j) + u_cols(i, j+1) ...
+%                                              - h^2 * xi                        );
+                end
+%                 u(i,:) = omega * u(i,:) + (1 - omega) * u_cols(i,:);
+                
             end
+            u = omega * u + (1 - omega) * u_prev;
+    
+            surf(x,y,u');
+            xlabel('Z');
+            ylabel('Y');
+            input('Next?');
 
             epsilon = sum(sum(abs(u_prev - u)));
-            fprintf('Iteration: %2i, Error Norm: %7.1e\n', n, epsilon);
-
             if n == 1
                 conv_crit = 1e-3 * epsilon;
             end
-    
-%             surf(x,y,u');
-%             xlabel('Z');
-%             ylabel('Y');
-%             input('asfd');
+            if 1e-3*epsilon/conv_crit > 1e20
+                error('Solution diverged.');
+            end
+            
+            fprintf('Iteration: %2i, Convergence: %7.1e\n', n, 1e-3*epsilon/conv_crit);
 
         end
         
         n_to_converge(i_omega) = n;
-        fprintf('Iteration: %4i, Error Norm: %7.1e\n', n, epsilon);
+        %fprintf('Iteration: %2i, Error Norm: %7.1e\n', n, epsilon);
         
     end
     
@@ -113,10 +106,10 @@ function [] = Problem_2()
     % Process results.
     %%%
     
-    figure();
-    plot(omega,n_to_converge);
-    xlabel('omega');
-    ylabel('Iterations');
+%     figure();
+%     plot(omega,n_to_converge);
+%     xlabel('omega');
+%     ylabel('Iterations');
     
     figure();
     [C,h] = contour(x,y,u','LineWidth',2);
