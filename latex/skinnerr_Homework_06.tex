@@ -102,6 +102,7 @@ Change the upper boundary condition to represent a solid lid moving at a constan
 \begin{equation}
 U_{,Y}(1,Z) = 0 \quad\longrightarrow\quad U(1,Z) = 1
 \;.
+\label{eq:new_bcs}
 \end{equation}
 Solve this problem using the successive over-relaxation (SOR) method. As in Problem 1, define convergence as a reduction by three orders of magnitude of the initial error in the maximum norm.
 
@@ -114,6 +115,8 @@ Plot the contours of $U$ in the $Y$-$Z$ plane at convergence, and compare the re
 \section{Methodology} %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Before discussing the numerical methods, we note that the physical application of the source term $\xi$ (both problems) and the upper boundary condition $U=1$ (Problem 2) is somewhat confusing, due to the fact that the $Z$-$Y$ plane as defined is not right-handed. That is, $Z \times Y = -X$, rather than $+X$. As such, we opt to solve the differential equations as presented in \eqref{eq:poisson}, \eqref{eq:original_bcs}, and \eqref{eq:new_bcs}, rather than making physical arguments to correct for the coordinate system. As such, our solutions to the BVP may be off by a negative sign compared to their intuitive physical interpretations.
 
 \subsection{Problem 1}
 
@@ -145,47 +148,58 @@ n = 2, 3, ...
 \end{equation}
 and cease solution when $\epsilon_n \le 10^{-3}$. Here, $\epsilon_1$ is defined as the RHS sums evaluated for $n=1$, and the initial guess is defined as $U_{i,j}^0 = 0$.
 
-Peaceman and Rachford (1955) show that the ADI method converges for any value of the iteration parameter $\rho$. The optimal value is a function of the iteration number:
+Peaceman and Rachford (1955) show that the ADI method converges for any value of the iteration parameter $\rho$. The optimal value is a function of the iteration number $k$:
 \begin{equation}
-\rho = 4 \sin^2 \frac{k \pi}{2 N}
+\rho_k = 4 \sin^2 \frac{k \pi}{2 N}
 \;, \qquad
 k = 1, 2, ..., n \quad \text{(until convergence)}
 \;.
 \end{equation}
-If we were to change $\rho$ on each iteration, the $\mb{L}$ and $\mb{U}$ matrices involved in LU-decomposition would need to change each iteration as well, and we would sacrifice the efficiency gains of LU-decomposition. Instead, we choose a constant value of $\rho = 0.002$ that gives reasonably fast convergence (9 iterations) based on experimentation. The details of LU-decomposition will not be discussed here, as they were presented in full in Homework~4.
+Note that since we change $\rho$ on each iteration, the $\mb{L}$ and $\mb{U}$ matrices involved in LU-decomposition need to be re-assembled with each iteration, and we sacrifice some of the efficiency gains of LU-decomposition. The details of LU-decomposition will not be discussed here, as they were presented in full in Homework~4.
 
 \subsection{Problem 2}
 
-We modify the the equations from the ADI method ever so slightly for the SOR method, in that a pseudo-time derivative is never used, but we still sweep in alternating directions. We focus on a single-direction ``row sweep'' for illustrative purposes. The associated central difference equation becomes
+For the SOR method, we perform ``column sweeps'' over the whole domain until convergence is achieved. That is, we loop over $i = 2, ..., N-1$ and apply the following SOR central difference equation to each grid point with $j = 2, ..., M-1$:
 \begin{equation}
-\left( \frac{-\omega}{4} \right) U_{i-1,j}^{n+1/2}
-+ U_{i,j}^{n+1/2}
-+ \left( \frac{-\omega}{4} \right) U_{i+1,j}^{n+1/2}
+U_{i,j}^{n}
 =
-\left( 1 - \omega \right) U_{i,j}^n
+\left( 1 - \omega \right) U_{i,j}^{n-1}
 + \frac{\omega}{4}
 \left(
-U_{i,j+1}^{n} + U_{i,j-1}^{n} - h^2 \xi_{i,j}
+  U_{i-1,j}^{n}
++ U_{i,j-1}^{n}
++ U_{i+1,j}^{n-1}
++ U_{i,j+1}^{n-1}
+- h^2 \xi_{i,j}
 \right)
 \;,
 \end{equation}
-where $\omega$ is the relaxation parameter, which typically has an optimal value in the range $[1.7,1.9]$. This equation is used to calculate the half-iteration values $U^{n+1/2}$, and then we perform a ``column sweep'' to finish one full iteration.
+where $\omega$ is the relaxation parameter, which typically has an optimal value in the range $[1.7,1.9]$.
+
+\begin{wrapfigure}[15]{R}{0.5\textwidth}
+\begin{center}
+\includegraphics[scale=0.6]{Prob1.eps}
+\\[0.5cm]
+\caption{Contours of $U$ for Problem 1.}
+\label{fig:Prob1}
+\end{center}
+\end{wrapfigure}
 
 The theoretical optimum value of $\omega$ is given by
-\begin{equation}
-\omega = \frac{8 - 4 \sqrt{4 - \alpha^2}}{\alpha^2}
-\;,\qquad
-\alpha = \cos(\pi/M) + \cos(\pi/N)
+\begin{align}
+\omega_\text{opt} &= \frac{8 - 4 \sqrt{4 - \alpha^2}}{\alpha^2}
+\;,\\
+\alpha &= \cos(\pi/M) + \cos(\pi/N)
 \;,
-\end{equation}
-and for our grid with $M=N=101$, we obtain $\alpha = 1.9990$ and $\omega = 1.9397$.
+\end{align}
+and for our grid with $M=N=101$, we obtain $\alpha = 1.9990$ and $\omega_\text{opt} = 1.9397$.
 
-We define our convergence criterion based on the maximum norm as
+We define our convergence criterion exactly the same as in Problem 1, though we could have used the maximum norm, which is defined as
 \begin{equation}
 \epsilon_n = \frac{1}{\epsilon_1} \max_{i,j} \norm{U_{i,j}^{n} - U_{i,j}^{n-1}}
-\;.
+\;,
 \end{equation}
-Similar to the first problem, $\epsilon_1$ is defined as the RHS max operation evaluated for $n=1$, and the initial guess is defined as $U_{i,j}^0 = 0$ except for when $j=N$, in which case the $U=1$ boundary condition is imposed.
+where $\epsilon_1$ is defined as the RHS max operation evaluated for $n=1$. The initial guess is defined as $U_{i,j}^0 = 0$ except for when $j=N$, in which case the upper boundary condition $U=1$ is imposed.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -197,25 +211,18 @@ Similar to the first problem, $\epsilon_1$ is defined as the RHS max operation e
 
 A contour plot of the solution for $U$ obtained from the ADI method is presented in \figref{fig:Prob1}.
 
-\begin{figure}[h!]
-\begin{center}
-\includegraphics[scale=0.6]{Prob1.eps}
-\\[0.5cm]
-\caption{Contours of $U$ for Problem 1.}
-\label{fig:Prob1}
-\end{center}
-\end{figure}
-
 \subsection{Problem 2}
 
 Iterations to convergence as a function of $\omega$, as well as a contour plot of the solution for $U$ obtained from the SOR method is presented in \figref{fig:Prob2}.
+
+Experimentally, we find $\omega_\text{opt} = 1.9385 \pm 0.0015$, which is within error of our theoretical $\omega_\text{opt} = 1.9397$.
 
 \begin{figure}[h!]
 \begin{center}
 \includegraphics[scale=0.6]{Prob2_convergence.eps}
 \includegraphics[scale=0.6]{Prob2_contours.eps}
 \\[0.5cm]
-\caption{Convergence behavior and contours of $U$ for Problem 2.}
+\caption{Convergence behavior and contours of $U$ for Problem 2. Neighboring values of $\omega = 1.937$ and $\omega = 1.940$ both converge in 202 iterations.}
 \label{fig:Prob2}
 \end{center}
 \end{figure}
@@ -228,7 +235,11 @@ Iterations to convergence as a function of $\omega$, as well as a contour plot o
 
 \subsection{Problem 1}
 
+The ADI method converges very rapidly (within 5 iterations) using the variable time-step $\sigma_k$. The contours obtained are reasonable for laminar flow in a duct of rectangular cross-section with an aspect ratio of 2. In \figref{fig:Prob1}, we only see the lower half of this duct.
+
 \subsection{Problem 2}
+
+Substantial improvements are observed by using the SOR method compared to a simple Gauss-Seidel method, which the SOR method reduces to when $\omega = 1$. This value of $\omega$ is not shown in \figref{fig:Prob2} due to a high number of iterations (4142) to convergence. The experimental value of $\omega_\text{opt}$ matches the theoretical value within an error of 0.08\%. Physically, we observe the moving wall boundary condition $U=1$ to dominate the source term $\xi$ in dictating flow behavior.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -244,13 +255,11 @@ No external references were used other than the course notes for this assignment
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The following code listings generate all figures presented in this homework assignment. LU-decomposition code is omitted since it was already presented in Homework~4.
+The following code listings generate all figures presented in this homework assignment. The author's own LU-decomposition code is omitted since it was already presented in Homework~4.
 
 \includecode{Problem_1.m}
-\includecode{Assemble_fixJAY.m}
-\includecode{Assemble_fixEYE.m}
+\includecode{Assemble_ADI.m}
 \includecode{Problem_2.m}
-\includecode{Assemble_SOR.m}
 
 %%
 %% DOCUMENT END
