@@ -14,23 +14,22 @@ function [] = Problem_2()
     %%%
     
     % Solution domain: the closed interval [0,1]x[0,1]. Assume dx = dy = h.
-    N = 51;
+    N = 101;
     x = linspace(0,1,N);
     y = linspace(0,1,N);
     h = x(2) - x(1);
     
     % Source term.
-    xi = -1;
+    xi = 1;
     
     % Boundary conditions (u and uprime) defined as cardinal directions (n, s, w, e).
     BC.us = 0;
     BC.uw = 0;
     BC.ue = 0;
-    BC.un = 1;
+    BC.un = -1;
     
     % Relaxation parameters to test.
-    omega = [linspace(1.7,1.8,21), linspace(1.8,1.999,61)];
-    omega = 1.9;
+    omega = [linspace(1.5,1.8,4), linspace(1.805,1.995,80)];
     
     n_to_converge = nan(length(omega));
     
@@ -40,7 +39,7 @@ function [] = Problem_2()
     
     for i_omega = 1:length(omega)
         om = omega(i_omega);
-        fprintf('Working on omega = %6.3f\n', om);
+        fprintf('\nWorking on omega = %6.3f\n', om);
     
         % Initialize the solution, indexed by (x,y), and set BCs.
         u = zeros(N,N);
@@ -49,7 +48,7 @@ function [] = Problem_2()
         u(1,:)   = BC.uw;
         u(end,:) = BC.ue;
     
-        % Solution norm.
+        % Error and convergence measures.
         epsilon = inf;
         conv_crit = 0;
 
@@ -58,50 +57,41 @@ function [] = Problem_2()
 
         % Iterate over time steps.
         while epsilon > conv_crit
-            n = n + 1;
             
+            n = n + 1;
             u_prev = u;
             
-            for j = 2:N-1
-                
-                u_cols = u;
-                
-                i_half = round(N/2);
-%                 for i = [2:i_half-1, N-1:-1:i_half]
-                for i = [i_half:N-1, i_half-1:-1:2]
-%                 for i = 2:N-1
-                    u(i,j) = (1/4) * (   u_cols(i-1, j) + u_cols(i, j-1) ...
-                                       + u_cols(i+1, j) + u_cols(i, j+1) ...
-                                       - h^2 * xi                        );
-%                     u(i,j) = (1 - omega) * u_cols(i,j) ...
-%                              + (omega/4) * (   u_cols(i-1, j) + u_cols(i, j-1) ...
-%                                              + u_cols(i+1, j) + u_cols(i, j+1) ...
-%                                              - h^2 * xi                        );
+            for i = 2:N-1
+                for j = 2:N-1
+                    u(i,j) = (1 - om) * u_prev(i,j) ...
+                             + (om/4) * (        u(i-1, j) ...
+                                          +      u(i,   j-1) ...
+                                          + u_prev(i+1, j) ...
+                                          + u_prev(i,   j+1) ...
+                                          - h^2 * xi );
                 end
-                u(i,:) = omega * u(i,:) + (1 - omega) * u_cols(i,:);
-                
             end
-%             u = omega * u + (1 - omega) * u_prev;
-    
-            surf(x,y,u');
-            xlabel('Z');
-            ylabel('Y');
-            input('Next?');
-
+            
+            % Calculate error norm.
             epsilon = sum(sum(abs(u_prev - u)));
+            
+            % Set convergence criterion based on first iteration.
             if n == 1
                 conv_crit = 1e-3 * epsilon;
             end
-            if 1e-3*epsilon/conv_crit > 1e20
+            
+            % Abort if diverging.
+            if 1e-3*epsilon/conv_crit > 1e5
                 error('Solution diverged.');
             end
             
-            fprintf('Iteration: %2i, Convergence: %7.1e\n', n, 1e-3*epsilon/conv_crit);
-
+            if (mod(n,10)  == 0) fprintf('.'); end
+            if (mod(n,500) == 0) fprintf('\n'); end
         end
         
+        % Store and print convergence information.
         n_to_converge(i_omega) = n;
-        %fprintf('Iteration: %2i, Error Norm: %7.1e\n', n, epsilon);
+        fprintf('\nIteration: %2i, Error Norm: %7.1e\n', n, 1e-3*epsilon/conv_crit);
         
     end
     
@@ -109,10 +99,12 @@ function [] = Problem_2()
     % Process results.
     %%%
     
-%     figure();
-%     plot(omega,n_to_converge);
-%     xlabel('omega');
-%     ylabel('Iterations');
+    figure();
+    plot(omega,n_to_converge);
+    xlabel('omega');
+    ylabel('Iterations');
+    xlim([1.5,2]);
+    ylim([0,2000]);
     
     figure();
     [C,h] = contour(x,y,u','LineWidth',2);
