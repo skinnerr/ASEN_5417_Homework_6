@@ -12,3 +12,5 @@ matlab/*.m\~
 images/*
 !images/*.png
 !images/*.pdf
+# Exclude turn-in folder and zip file
+skinnerr_*
