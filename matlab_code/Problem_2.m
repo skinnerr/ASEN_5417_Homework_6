@@ -14,7 +14,7 @@ function [] = Problem_2()
     %%%
     
     % Solution domain: the closed interval [0,1]x[0,1]. Assume dx = dy = h.
-    N = 101;
+    N = 51;
     x = linspace(0,1,N);
     y = linspace(0,1,N);
     h = x(2) - x(1);
@@ -30,7 +30,7 @@ function [] = Problem_2()
     
     % Relaxation parameters to test.
     omega = [linspace(1.7,1.8,21), linspace(1.8,1.999,61)];
-    omega = 1.3;
+    omega = 1.9;
     
     n_to_converge = nan(length(omega));
     
@@ -62,11 +62,14 @@ function [] = Problem_2()
             
             u_prev = u;
             
-            % Loop over columns.
-            for i = 2:N-1
-                % Within each column, loop over rows.
+            for j = 2:N-1
+                
                 u_cols = u;
-                for j = 2:N-1
+                
+                i_half = round(N/2);
+%                 for i = [2:i_half-1, N-1:-1:i_half]
+                for i = [i_half:N-1, i_half-1:-1:2]
+%                 for i = 2:N-1
                     u(i,j) = (1/4) * (   u_cols(i-1, j) + u_cols(i, j-1) ...
                                        + u_cols(i+1, j) + u_cols(i, j+1) ...
                                        - h^2 * xi                        );
@@ -75,10 +78,10 @@ function [] = Problem_2()
 %                                              + u_cols(i+1, j) + u_cols(i, j+1) ...
 %                                              - h^2 * xi                        );
                 end
-%                 u(i,:) = omega * u(i,:) + (1 - omega) * u_cols(i,:);
+                u(i,:) = omega * u(i,:) + (1 - omega) * u_cols(i,:);
                 
             end
-            u = omega * u + (1 - omega) * u_prev;
+%             u = omega * u + (1 - omega) * u_prev;
     
             surf(x,y,u');
             xlabel('Z');
