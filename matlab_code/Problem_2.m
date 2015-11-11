@@ -20,13 +20,13 @@ function [] = Problem_2()
     h = x(2) - x(1);
     
     % Source term.
-    xi = 1;
+    xi = -1;
     
     % Boundary conditions (u and uprime) defined as cardinal directions (n, s, w, e).
     BC.us = 0;
     BC.uw = 0;
     BC.ue = 0;
-    BC.un = -1;
+    BC.un = 1;
     
     % Relaxation parameters to test.
     omega = [linspace(1.5,1.8,4), linspace(1.805,1.995,80)];
