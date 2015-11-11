@@ -74,8 +74,6 @@ function [] = Problem_2()
                                           + u_prev(i,   j+1) ...
                                           - h^2 * xi );
                 end
-%                 u(i,:) = omega * u(i,:) + (1 - omega) * u_cols(i,:);
-                
             end
             
             % Calculate error norm.
